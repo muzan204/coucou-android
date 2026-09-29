@@ -45,10 +45,8 @@ class _MascotImageState extends State<MascotImage> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
+    controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
+      ..repeat(reverse: true);
     scale = Tween(begin: .96, end: 1.035).animate(
       CurvedAnimation(parent: controller, curve: Curves.easeInOut),
     );
@@ -73,11 +71,11 @@ class _MascotImageState extends State<MascotImage> with SingleTickerProviderStat
             BoxShadow(
               color: widget.state.color.withValues(alpha: .28),
               blurRadius: 28,
-            )
+            ),
           ],
         ),
         clipBehavior: Clip.antiAlias,
-        child: Image.asset('assets/brand/mascot.png', fit: BoxFit.cover),
+        child: Image.asset('assets/brand/mascot.jpg', fit: BoxFit.cover),
       ),
     );
   }
