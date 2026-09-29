@@ -44,7 +44,7 @@ jobs:
           cp android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt /tmp/coucou-MainActivity.kt
 
       - name: Completar estrutura Flutter Android
-        run: flutter create --org com.meraky --project-name coucou_android .
+        run: flutter create --overwrite --platforms=android --org com.meraky --project-name coucou_android .
 
       - name: Restaurar arquivos Coucou
         run: |
