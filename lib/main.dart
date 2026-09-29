@@ -60,7 +60,7 @@ class _CoucouOverlayState extends State<CoucouOverlay> {
                 boxShadow: [BoxShadow(color: state.color.withValues(alpha: .24), blurRadius: 25)],
               ),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                ClipOval(child: Image.asset('assets/brand/mascot.png', width: 56, height: 56, fit: BoxFit.cover)),
+                ClipOval(child: Image.asset('assets/brand/mascot.jpg', width: 56, height: 56, fit: BoxFit.cover)),
                 const SizedBox(width: 9),
                 Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
                   const Text('COUCOU', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 9, letterSpacing: 2.3)),
