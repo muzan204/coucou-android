@@ -1,10 +1,17 @@
-name: Build Coucou Android APK
+name: Build & Publish Coucou APK
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coucou-release
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -13,6 +20,8 @@ jobs:
     steps:
       - name: Baixar projeto
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Configurar Java
         uses: actions/setup-java@v5
@@ -26,36 +35,59 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Guardar arquivos personalizados
-        run: |
-          cp lib/main.dart /tmp/main.dart
-          cp pubspec.yaml /tmp/pubspec.yaml
-          cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml
-          cp android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt /tmp/MainActivity.kt
-
-      - name: Completar projeto Flutter
-        run: |
-          flutter create --org com.meraky --project-name coucou_android .
-
-      - name: Restaurar Coucou
-        run: |
-          cp /tmp/main.dart lib/main.dart
-          cp /tmp/pubspec.yaml pubspec.yaml
-          cp /tmp/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
-          mkdir -p android/app/src/main/kotlin/com/meraky/coucou_android
-          cp /tmp/MainActivity.kt android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt
+      - name: Completar estrutura Android
+        run: flutter create --org com.meraky --project-name coucou_android .
 
       - name: Instalar dependências
         run: flutter pub get
 
+      - name: Gerar ícone do aplicativo
+        run: dart run flutter_launcher_icons
+
       - name: Verificar Flutter
         run: flutter doctor -v
 
-      - name: Compilar APK
-        run: flutter build apk --release
+      - name: Compilar APK atualizado
+        run: |
+          flutter build apk --release \
+            --build-name "3.1.${{ github.run_number }}" \
+            --build-number "${{ github.run_number }}"
 
-      - name: Salvar APK
+      - name: Preparar atualização
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk coucou-latest.apk
+          cat > version.json <<EOF
+          {
+            "version": "3.1.${{ github.run_number }}",
+            "build": ${{ github.run_number }},
+            "commit": "${{ github.sha }}",
+            "notes": "Atualização automática do Coucou Projects Hub."
+          }
+          EOF
+
+      - name: Atualizar tag rolling
+        run: |
+          git tag -f coucou-latest "${{ github.sha }}"
+          git push origin refs/tags/coucou-latest --force
+
+      - name: Publicar Release automática
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view coucou-latest >/dev/null 2>&1; then
+            gh release edit coucou-latest \
+              --title "Coucou Projects Hub 3.1.${{ github.run_number }}" \
+              --notes "Build automático do commit ${{ github.sha }}."
+            gh release upload coucou-latest coucou-latest.apk version.json --clobber
+          else
+            gh release create coucou-latest \
+              coucou-latest.apk version.json \
+              --title "Coucou Projects Hub 3.1.${{ github.run_number }}" \
+              --notes "Canal automático de atualização do Coucou."
+          fi
+
+      - name: Salvar APK também como artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coucou-android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: coucou-projects-hub-v3
+          path: coucou-latest.apk
