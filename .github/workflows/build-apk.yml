@@ -35,8 +35,26 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Completar estrutura Android
+      - name: Guardar arquivos Coucou
+        run: |
+          cp -r lib /tmp/coucou-lib
+          cp -r assets /tmp/coucou-assets
+          cp pubspec.yaml /tmp/coucou-pubspec.yaml
+          cp android/app/src/main/AndroidManifest.xml /tmp/coucou-AndroidManifest.xml
+          cp android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt /tmp/coucou-MainActivity.kt
+
+      - name: Completar estrutura Flutter Android
         run: flutter create --org com.meraky --project-name coucou_android .
+
+      - name: Restaurar arquivos Coucou
+        run: |
+          rm -rf lib assets
+          cp -r /tmp/coucou-lib lib
+          cp -r /tmp/coucou-assets assets
+          cp /tmp/coucou-pubspec.yaml pubspec.yaml
+          cp /tmp/coucou-AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          mkdir -p android/app/src/main/kotlin/com/meraky/coucou_android
+          cp /tmp/coucou-MainActivity.kt android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt
 
       - name: Instalar dependências
         run: flutter pub get
