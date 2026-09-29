@@ -1,0 +1,23 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -u
+
+if [ "$#" -eq 0 ]; then
+  echo "Uso: coucou-run <comando> [argumentos...]"
+  echo "Exemplo: coucou-run npm run dev"
+  exit 2
+fi
+
+COUCOU="${COUCOU_BIN:-$HOME/bin/coucou}"
+
+"$COUCOU" working >/dev/null 2>&1 || true
+
+"$@"
+code=$?
+
+if [ "$code" -eq 0 ]; then
+  "$COUCOU" success >/dev/null 2>&1 || true
+else
+  "$COUCOU" error >/dev/null 2>&1 || true
+fi
+
+exit "$code"

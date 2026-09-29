@@ -1,0 +1,61 @@
+name: Build Coucou Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v6
+
+      - name: Configurar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Guardar arquivos personalizados
+        run: |
+          cp lib/main.dart /tmp/main.dart
+          cp pubspec.yaml /tmp/pubspec.yaml
+          cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest.xml
+          cp android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt /tmp/MainActivity.kt
+
+      - name: Completar projeto Flutter
+        run: |
+          flutter create --org com.meraky --project-name coucou_android .
+
+      - name: Restaurar Coucou
+        run: |
+          cp /tmp/main.dart lib/main.dart
+          cp /tmp/pubspec.yaml pubspec.yaml
+          cp /tmp/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          mkdir -p android/app/src/main/kotlin/com/meraky/coucou_android
+          cp /tmp/MainActivity.kt android/app/src/main/kotlin/com/meraky/coucou_android/MainActivity.kt
+
+      - name: Instalar dependências
+        run: flutter pub get
+
+      - name: Verificar Flutter
+        run: flutter doctor -v
+
+      - name: Compilar APK
+        run: flutter build apk --release
+
+      - name: Salvar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: coucou-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk

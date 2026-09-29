@@ -1,0 +1,45 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -u
+
+PORT="${COUCOU_PORT:-8765}"
+BASE="http://127.0.0.1:${PORT}"
+
+usage() {
+  cat <<'EOF'
+Coucou Android + Termux
+
+Uso:
+  coucou ping
+  coucou idle
+  coucou thinking
+  coucou working
+  coucou success
+  coucou error
+  coucou sleeping
+
+Exemplo:
+  coucou working
+EOF
+}
+
+state="${1:-}"
+
+case "$state" in
+  ping)
+    curl -fsS "$BASE/ping"
+    echo
+    ;;
+  idle|thinking|working|success|error|sleeping)
+    curl -fsS "$BASE/state?value=$state&source=termux"
+    echo
+    ;;
+  -h|--help|help|"")
+    usage
+    ;;
+  *)
+    echo "Estado inválido: $state"
+    echo
+    usage
+    exit 2
+    ;;
+esac
