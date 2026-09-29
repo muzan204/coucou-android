@@ -48,7 +48,7 @@ jobs:
 
       - name: Restaurar arquivos Coucou
         run: |
-          rm -rf lib assets
+          rm -rf lib assets test
           cp -r /tmp/coucou-lib lib
           cp -r /tmp/coucou-assets assets
           cp /tmp/coucou-pubspec.yaml pubspec.yaml
