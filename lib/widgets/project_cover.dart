@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
-import '../data/project_covers.dart';
+import '../data/project_themes.dart';
 import '../models/project.dart';
 
 class ProjectCover extends StatefulWidget {
@@ -33,9 +33,11 @@ class _ProjectCoverState extends State<ProjectCover> {
 
   @override
   Widget build(BuildContext context) {
-    final radius = widget.borderRadius ?? BorderRadius.circular(20);
+    final visual = ProjectThemes.of(widget.repo);
+    final radius = widget.borderRadius ?? BorderRadius.circular(22);
+
     final image = Image.network(
-      ProjectCovers.getCover(widget.repo),
+      visual.cover,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
@@ -47,97 +49,173 @@ class _ProjectCoverState extends State<ProjectCover> {
         errorBuilder: (_, __, ___) => Container(
           color: AppColors.surface,
           alignment: Alignment.center,
-          child: Text(
-            widget.repo.name.isEmpty ? 'P' : widget.repo.name[0].toUpperCase(),
-            style: const TextStyle(
-              fontSize: 58,
-              fontWeight: FontWeight.w900,
-              color: AppColors.cyan,
-            ),
+          child: Icon(
+            visual.icon,
+            size: 58,
+            color: visual.primary,
           ),
         ),
       ),
     );
 
-    Widget child = ClipRRect(
-      borderRadius: radius,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          image,
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: .05),
-                  Colors.black.withValues(alpha: .10),
-                  Colors.black.withValues(alpha: .70),
-                ],
-              ),
-            ),
+    Widget card = Container(
+      decoration: BoxDecoration(
+        borderRadius: radius,
+        border: Border.all(
+          color: visual.primary.withValues(alpha: .18),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: visual.primary.withValues(alpha: .11),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
-          Positioned(
-            left: 10,
-            top: 10,
-            child: _Badge(
-              text: widget.repo.language,
-              color: AppColors.cyan,
-            ),
-          ),
-          if (widget.repo.isPrivate)
-            const Positioned(
-              right: 10,
-              top: 10,
-              child: _Badge(
-                text: 'PRIVADO',
-                color: AppColors.violet,
-                icon: Icons.lock,
-              ),
-            ),
-          if (widget.onFavorite != null)
-            Positioned(
-              right: 9,
-              bottom: 8,
-              child: Material(
-                color: Colors.black.withValues(alpha: .42),
-                shape: const CircleBorder(),
-                child: IconButton(
-                  visualDensity: VisualDensity.compact,
-                  onPressed: widget.onFavorite,
-                  icon: Icon(
-                    widget.favorite ? Icons.star : Icons.star_border,
-                    color: widget.favorite ? AppColors.amber : Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          if (widget.showTitle)
-            Positioned(
-              left: 12,
-              right: widget.onFavorite == null ? 12 : 54,
-              bottom: 13,
-              child: Text(
-                widget.repo.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                  shadows: [
-                    Shadow(color: Colors.black87, blurRadius: 8),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            image,
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    visual.primary.withValues(alpha: .20),
+                    Colors.transparent,
+                    visual.secondary.withValues(alpha: .18),
                   ],
                 ),
               ),
             ),
-        ],
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: .03),
+                    Colors.black.withValues(alpha: .12),
+                    Colors.black.withValues(alpha: .80),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 10,
+              top: 10,
+              child: _Badge(
+                text: visual.category,
+                color: visual.primary,
+                icon: visual.icon,
+              ),
+            ),
+            if (widget.repo.isPrivate)
+              Positioned(
+                right: 10,
+                top: 10,
+                child: _Badge(
+                  text: 'Privado',
+                  color: visual.secondary,
+                  icon: Icons.lock_rounded,
+                ),
+              ),
+            if (widget.onFavorite != null)
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: Material(
+                  color: Colors.black.withValues(alpha: .40),
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    visualDensity: VisualDensity.compact,
+                    onPressed: widget.onFavorite,
+                    icon: Icon(
+                      widget.favorite
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
+                      color: widget.favorite
+                          ? visual.accent
+                          : Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            if (widget.showTitle)
+              Positioned(
+                left: 13,
+                right: widget.onFavorite == null ? 13 : 54,
+                bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.repo.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -.25,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black87,
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: visual.accent,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: visual.accent.withValues(alpha: .55),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            widget.repo.language.isEmpty
+                                ? 'Projeto'
+                                : widget.repo.language,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFFDCE6F3),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
 
     if (widget.heroTag != null) {
-      child = Hero(tag: widget.heroTag!, child: child);
+      card = Hero(
+        tag: widget.heroTag!,
+        child: card,
+      );
     }
 
     return GestureDetector(
@@ -147,11 +225,11 @@ class _ProjectCoverState extends State<ProjectCover> {
       child: AnimatedScale(
         duration: const Duration(milliseconds: 160),
         curve: Curves.easeOut,
-        scale: pressed ? .975 : 1,
+        scale: pressed ? .978 : 1,
         child: SizedBox(
           height: widget.height,
           width: double.infinity,
-          child: child,
+          child: card,
         ),
       ),
     );
@@ -172,31 +250,41 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 9,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: .88),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: .12),
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: .24),
+            color: color.withValues(alpha: .26),
             blurRadius: 14,
-          )
+          ),
         ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: Colors.white),
+            Icon(
+              icon,
+              size: 12,
+              color: Colors.white,
+            ),
             const SizedBox(width: 4),
           ],
           Text(
-            text.isEmpty ? 'PROJETO' : text.toUpperCase(),
+            text.toUpperCase(),
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 10,
+              fontSize: 9.5,
               fontWeight: FontWeight.w900,
-              letterSpacing: .4,
+              letterSpacing: .45,
             ),
           ),
         ],
