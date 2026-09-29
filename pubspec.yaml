@@ -1,21 +1,37 @@
 name: coucou_android
-description: Mascote flutuante Android com integração local ao Termux.
+description: Coucou Projects Hub - GitHub, Termux, sites e APKs em um só app.
 publish_to: "none"
-version: 2.0.0+2
+version: 3.0.0+3
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
   flutter_overlay_window: ^0.5.0
+  http: ^1.6.0
+  url_launcher: ^6.3.2
+  flutter_secure_storage: ^11.2.0
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/logo.png
+    - assets/brand/app_icon.png
+    - assets/brand/mascot.png
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/brand/app_icon.png
+  adaptive_icon_background: "#0F172A"
+  adaptive_icon_foreground: assets/brand/app_icon.png
