@@ -63,12 +63,14 @@ jobs:
         run: dart run flutter_launcher_icons
 
       - name: Verificar Flutter
-        run: flutter doctor -v
+        run: |
+          flutter doctor -v
+          flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Compilar APK atualizado
         run: |
           flutter build apk --release \
-            --build-name "3.1.${{ github.run_number }}" \
+            --build-name "4.0.${{ github.run_number }}" \
             --build-number "${{ github.run_number }}"
 
       - name: Preparar atualização
@@ -76,7 +78,7 @@ jobs:
           cp build/app/outputs/flutter-apk/app-release.apk coucou-latest.apk
           cat > version.json <<EOF
           {
-            "version": "3.1.${{ github.run_number }}",
+            "version": "4.0.${{ github.run_number }}",
             "build": ${{ github.run_number }},
             "commit": "${{ github.sha }}",
             "notes": "Atualização automática do Coucou Projects Hub."
@@ -94,13 +96,13 @@ jobs:
         run: |
           if gh release view coucou-latest >/dev/null 2>&1; then
             gh release edit coucou-latest \
-              --title "Coucou Projects Hub 3.1.${{ github.run_number }}" \
+              --title "Coucou Projects Hub 4.0.${{ github.run_number }}" \
               --notes "Build automático do commit ${{ github.sha }}."
             gh release upload coucou-latest coucou-latest.apk version.json --clobber
           else
             gh release create coucou-latest \
               coucou-latest.apk version.json \
-              --title "Coucou Projects Hub 3.1.${{ github.run_number }}" \
+              --title "Coucou Projects Hub 4.0.${{ github.run_number }}" \
               --notes "Canal automático de atualização do Coucou."
           fi
 
