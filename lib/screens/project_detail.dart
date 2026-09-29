@@ -30,7 +30,7 @@ class _ProjectDetailState extends State<ProjectDetail> {
   Future<void> _open(String url) async { final u=Uri.tryParse(url); if(u!=null) await launchUrl(u,mode:LaunchMode.externalApplication); }
   Future<void> _sync() async {
     if(!widget.termuxOnline){_msg('No Termux rode: coucou-agent',true);return;}
-    try { final r=installed?await widget.termux.pull(widget.repo):await widget.termux.clone(widget.repo); _msg(r['message']?.toString()??'Concluído',false); await _load(); }
+    try { final r=installed?await widget.termux.pull(widget.repo):await widget.termux.clone(widget.repo); _msg(r['message']?.toString()??'Concluído'); await _load(); }
     catch(e){_msg(e.toString(),true);}
   }
   void _msg(String t,bool err)=>ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t),backgroundColor:err?AppColors.red:AppColors.surface));

@@ -57,10 +57,5 @@ class ApkRelease {
   final String downloadUrl;
   final int size;
 
-  const ApkRelease({
-    required this.tag,
-    required this.name,
-    required this.downloadUrl,
-    required this.size,
-  });
+  const ApkRelease({required this.tag, required this.name, required this.downloadUrl, required this.size});
 }
