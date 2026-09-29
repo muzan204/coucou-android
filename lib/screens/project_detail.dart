@@ -3,7 +3,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../core/theme.dart';
 import '../models/project.dart';
 import '../services/github_service.dart';
+import '../services/favorite_service.dart';
 import '../services/termux_service.dart';
+import '../widgets/project_cover.dart';
 
 class ProjectDetail extends StatefulWidget {
   final ProjectRepo repo;
@@ -15,18 +17,22 @@ class ProjectDetail extends StatefulWidget {
 }
 
 class _ProjectDetailState extends State<ProjectDetail> {
-  bool loading = true, installed = false, dirty = false;
+  final favoritesService = FavoriteService();
+  bool loading = true, installed = false, dirty = false, favorite = false;
   String branch = '';
   ApkRelease? apk;
   @override void initState(){super.initState(); _load();}
   Future<void> _load() async {
     branch = widget.repo.branch;
+    final favorites = await favoritesService.load();
+    favorite = favorites.contains(widget.repo.fullName);
     if(widget.termuxOnline){
       try { final s=await widget.termux.status(widget.repo); installed=s['installed']==true; dirty=s['dirty']==true; branch=s['branch']?.toString()??branch; } catch(_){}
     }
     apk=await widget.github.latestApk(widget.repo);
     if(mounted)setState(()=>loading=false);
   }
+  Future<void> _toggleFavorite() async { final next=await favoritesService.toggle(widget.repo.fullName); if(mounted)setState(()=>favorite=next.contains(widget.repo.fullName)); }
   Future<void> _open(String url) async { final u=Uri.tryParse(url); if(u!=null) await launchUrl(u,mode:LaunchMode.externalApplication); }
   Future<void> _sync() async {
     if(!widget.termuxOnline){_msg('No Termux rode: coucou-agent',true);return;}
@@ -36,12 +42,12 @@ class _ProjectDetailState extends State<ProjectDetail> {
   void _msg(String t,bool err)=>ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(t),backgroundColor:err?AppColors.red:AppColors.surface));
   @override Widget build(BuildContext context){
     final r=widget.repo;
-    return Scaffold(appBar:AppBar(title:Text(r.name)),body:loading?const Center(child:CircularProgressIndicator()):ListView(padding:const EdgeInsets.all(18),children:[
-      ClipRRect(borderRadius:BorderRadius.circular(24),child:AspectRatio(aspectRatio:16/9,child:Image.network(r.socialPreview,fit:BoxFit.cover,errorBuilder:(_,__,___)=>Container(color:AppColors.surface2,child:Center(child:Text(r.name.characters.first,style:const TextStyle(fontSize:72,fontWeight:FontWeight.w900,color:AppColors.cyan))))))),
+    return Scaffold(appBar:AppBar(title:Text(r.name),actions:[IconButton(onPressed:_toggleFavorite,icon:Icon(favorite?Icons.star:Icons.star_border,color:favorite?AppColors.amber:null))]),body:loading?const Center(child:CircularProgressIndicator()):ListView(padding:const EdgeInsets.all(18),children:[
+      AspectRatio(aspectRatio:16/9,child:ProjectCover(repo:r,favorite:favorite,onFavorite:_toggleFavorite,heroTag:'project-${r.id}',borderRadius:BorderRadius.circular(24))),
       const SizedBox(height:16),
       Row(children:[Expanded(child:Text(r.name,style:const TextStyle(fontSize:28,fontWeight:FontWeight.w900))),if(r.isPrivate)const Icon(Icons.lock,color:AppColors.violet)]),
       const SizedBox(height:6),Text(r.description,style:const TextStyle(color:AppColors.muted,height:1.45)),const SizedBox(height:14),
-      Wrap(spacing:8,runSpacing:8,children:[_pill(r.language,AppColors.cyan),_pill(r.visibility,r.isPrivate?AppColors.violet:AppColors.green),_pill('branch $branch',AppColors.muted),if(installed)_pill(dirty?'alterações locais':'baixado',dirty?AppColors.amber:AppColors.green)]),
+      Wrap(spacing:8,runSpacing:8,children:[_pill(r.language,AppColors.cyan),_pill(r.visibility,r.isPrivate?AppColors.violet:AppColors.green),_pill('branch $branch',AppColors.muted),if(r.hasSite)_pill('site online',AppColors.green),if(favorite)_pill('favorito',AppColors.amber),if(installed)_pill(dirty?'alterações locais':'baixado',dirty?AppColors.amber:AppColors.green)]),
       const SizedBox(height:20),
       _btn(Icons.code,'Abrir GitHub',()=>_open(r.htmlUrl)),
       if(r.hasSite)_btn(Icons.public,'Abrir site',()=>_open(r.homepage)),
